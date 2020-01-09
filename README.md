@@ -1,8 +1,4 @@
 # SpMV
 Sparse Matrix-Vector (SpMV) bench
 
-\begin{align}
-\dot{x} & = \sigma(y-x) \\
-\dot{y} & = \rho x - y - xz \\
-\dot{z} & = -\beta z + xy
-\end{align}
+Let $\text{S}_1(N) = \sum_{p=1}^N \text{E}(p)$
