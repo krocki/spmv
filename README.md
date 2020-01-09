@@ -1,4 +1,10 @@
 # SpMV
-Sparse Matrix-Vector (SpMV) bench
+Sparse Matrix-Vector (SpMV) bench.
 
-Let $\text{S}_1(N) = \sum_{p=1}^N \text{E}(p)$
+`x` is a dense array
+
+`y` is a dense array
+
+`A` is a sparse matrix.
+
+```y = Ax```
