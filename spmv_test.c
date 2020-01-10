@@ -43,6 +43,7 @@ struct opts {
   float max_err;
   int print;
   int bench;
+  int legend;
 };
 
 int parse_args(int argc, char **argv, struct opts *o);
@@ -128,7 +129,7 @@ int main(int argc, char **argv) {
   if (!opt.bench)
   printf("M %u, K %u, ra %4.3f, rx %4.3f\ngemm/spmv time %2.5f, T gemm %f\ngemm_mflops = %4.6f, d MFLOP/s %.2f, T spmv %f + %f\nspmv_mflops = %4.6f, s MFLOP/s %.2f, NNZ A %u, NNZ B %u\nrho_a %f, rho_x %f, err = %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm / timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops / timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
   else
-  printf("%5u, %5u, %3.2f, %3.2f, %7.3f, %7f, %4.1f, %7.1f, %3.1f, %7f, %5.2f, %7.1f, %8u, %6u, %4.2f, %4.2f, %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm/timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops/timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
+  printf("%5u, %5u, %3.2f, %3.2f, %7.3f, %7f, %4.1f, %7.1f, %8f, %7f, %5.2f, %7.1f, %8u, %6u, %4.2f, %4.2f, %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm/timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops/timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
 
   if (opt.print) {
     echo(mat_print(&f, 0));
@@ -139,11 +140,16 @@ int main(int argc, char **argv) {
   return 0;
 }
 
+void print_tab_legend() {
+  printf("%5s, %5s, %4s, %4s, %7s, %8s, %4s, %4s, %3s, %7s, %5s, %7s, %8s, %6s, %4s, %4s, %s\n",
+  "M" , "K" , "ra" , "rx" , "X" , "t sgemm" , "mF" , "gemm FL" , "t spmv b" , "t spmv a" , "ops" , "sp mFL" , "nnz_a" , "nnz_b" , "r_a" , "r_x" , "err");
+}
+
 int parse_args(int argc, char **argv, struct opts *o) {
 
   int opt;
 
-  while ((opt = getopt(argc, argv, ":M:N:K:a:x:hpb")) != -1) {
+  while ((opt = getopt(argc, argv, ":M:N:K:a:x:hpbl")) != -1) {
     switch (opt) {
       case 'M': o->M = strtol(optarg, NULL, 10); break;
       case 'N': o->N = strtol(optarg, NULL, 10); break;
@@ -152,6 +158,7 @@ int parse_args(int argc, char **argv, struct opts *o) {
       case 'x': o->rho_x = strtof(optarg, NULL); break;
       case 'h': printf("usage: %s -M -N -K -a (sparsity) -x (sparsity) -b(ench)\n", argv[0]); return -1;
       case 'p': o->print=1; break;
+      case 'l': print_tab_legend(); return -1;
       case 'b': o->bench=1; break;
       default: printf("unknown option %c\n", optopt); return -1;
     }
