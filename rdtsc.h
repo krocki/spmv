@@ -42,4 +42,8 @@ static __inline__ unsigned long long rdtsc(void)
   return(result);
 }
 
+#else
+static __inline__ unsigned long long rdtsc(void) {
+  return 0;
+}
 #endif
