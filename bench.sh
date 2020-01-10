@@ -1,12 +1,15 @@
 #!/bin/bash
-Ms=(4 16 64 128 1024)
-Ks=(4 16 64 128 1024 2048)
-Rs=(0.01 0.05 0.1 0.2 0.5 1.0)
+Ms=(64 128 1024 2048 4096 8192)
+Ks=(64 128 1024 2048 4096 8192)
+As=(1.0 0.2 0.05 0.01)
+Xs=(1.0 0.5 0.2 0.1)
 
-for m in ${Ms[@]}; do
-  for k in ${Ks[@]}; do
-    for r in ${Rs[@]}; do
-      ./spmv_test -M $m -K $k -r $r -b
+for a in ${As[@]}; do
+  for x in ${Xs[@]}; do
+    for m in ${Ms[@]}; do
+      for k in ${Ks[@]}; do
+        ./spmv_test -M $m -K $k -a $a -x $x -b
+      done
     done
   done
 done

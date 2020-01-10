@@ -52,6 +52,21 @@ void spmv(spmat *A, mat *x, mat *b) {
   }
 }
 
+unsigned long spmv_flops(spmat *A, mat *x) {
+  unsigned long flops = 0UL;
+  for (unsigned i=0; i<x->n; i++) {
+    float x_val = x->d[i];
+    if (fabs(x_val) > 0) {
+      vec *a_col = &(A->cols[i]);
+      unsigned nnz_a = a_col->len;
+      for (unsigned j=0; j<nnz_a; j++) {
+        flops += 2;
+      }
+    }
+  }
+  return flops;
+}
+
 void print_sparse(spmat *s) {
   for (unsigned i=0; i<s->n_cols; i++) {
     if (s->cols[i].len>0) printf("col %u: ", i);

@@ -1,8 +1,8 @@
 CC=gcc
 LD=gcc
 
-OPT_LEVEL=-O0 -g
-#OPT_LEVEL=-flto -mavx2 -Ofast -fomit-frame-pointer
+#OPT_LEVEL=-O0 -g
+OPT_LEVEL=-flto -Ofast -fomit-frame-pointer
 
 CC_OPTS=$(OPT_LEVEL) -fPIC -Wall -Wno-unused-variable -Werror -Wfatal-errors
 LD_OPTS=$(OPT_LEVEL) -lm -lc

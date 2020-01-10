@@ -3,6 +3,18 @@
 #include <stdlib.h>
 #include "mat.h"
 
+void spmv_nn(
+           const int M, const int K,
+           float *restrict a, const int lda,
+           float *restrict b, const int ldb,
+           float *restrict c, const int ldc) {
+
+  for (int i=0; i<M; i++)
+  for (int k=0; k<K; k++)
+    c[i*ldc] += a[i*lda+k] * b[k*ldb];
+
+}
+
 void sgemm_nn(
            const int M, const int N, const int P,
            float *restrict a, const int lda,
@@ -24,8 +36,10 @@ void sgemm(mat *c, mat *a, mat *b) {
   int M = c->n;
   int N = c->ld;
   int K = a->ld;
-  sgemm_nn(M, N, K,
-  a->d, a->ld, b->d, b->ld, c->d, c->ld);
+  if (1==N)
+    spmv_nn(M, K, a->d, a->ld, b->d, b->ld, c->d, c->ld);
+  else
+    sgemm_nn(M, N, K, a->d, a->ld, b->d, b->ld, c->d, c->ld);
   //cblas
   //int at = a->transp;
   //int bt = b->transp;
