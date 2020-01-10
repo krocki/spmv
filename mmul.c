@@ -4,10 +4,10 @@
 #include "mat.h"
 
 void spmv_nn(
-           const int M, const int K,
-           float *restrict a, const int lda,
-           float *restrict b, const int ldb,
-           float *restrict c, const int ldc) {
+ const int M, const int K,
+ float *restrict a, const int lda,
+ float *restrict b, const int ldb,
+ float *restrict c, const int ldc) {
 
   for (int i=0; i<M; i++)
   for (int k=0; k<K; k++)
@@ -16,10 +16,10 @@ void spmv_nn(
 }
 
 void sgemm_nn(
-           const int M, const int N, const int P,
-           float *restrict a, const int lda,
-           float *restrict b, const int ldb,
-           float *restrict c, const int ldc) {
+ const int M, const int N, const int P,
+ float *restrict a, const int lda,
+ float *restrict b, const int ldb,
+ float *restrict c, const int ldc) {
 
   for (int i=0; i<M; i++)
   for (int k=0; k<P; k++)
