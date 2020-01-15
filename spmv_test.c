@@ -12,7 +12,9 @@ extern void spmat_release(spmat *s);
 extern void make_sparse(spmat *spmat, mat *m);
 extern void init_mat(mat *m, unsigned M, unsigned K);
 extern void spmv(spmat *A, mat *x, mat *b);
+extern void spmm(spmat *A, mat *x, mat *b);
 extern unsigned long spmv_flops(spmat *A, mat *x);
+extern unsigned long spmm_flops(spmat *A, mat *x);
 extern void mat_print(mat *m, int trans);
 extern void sgemm(mat *c, mat *a, mat *b);
 
@@ -51,7 +53,7 @@ int parse_args(int argc, char **argv, struct opts *o);
 #define DEFAULT_M 256
 #define DEFAULT_N 1
 #define DEFAULT_K 512
-#define DEFAULT_SPARSITY 0.5f
+#define DEFAULT_SPARSITY 0.25f
 #define DEFAULT_MAXERR 1e-3f
 
 float cmp(const mat *a, const mat *b) {
@@ -80,11 +82,12 @@ int main(int argc, char **argv) {
   float rho_a_target = opt.rho_a;
   float rho_x_target = opt.rho_x;
 
-  mat a,b,c,f;
+  mat a,b,c,f,g;
   init_mat(&a, M, K);
   init_mat(&b, K, N);
   init_mat(&c, M, N);
   init_mat(&f, M, N);
+  init_mat(&g, M, N);
 
   randn(a.d, 0, 0.5, M * K);
   randn(b.d, 0, 0.5, K * N);
@@ -94,6 +97,7 @@ int main(int argc, char **argv) {
   double timer_sgemm;
   double timer_spmv_a;
   double timer_spmv_b;
+  double timer_spmm_b;
 
   if (rho_a_target < 1.0f)
     sparsify(&a, rho_a_target);
@@ -120,14 +124,20 @@ int main(int argc, char **argv) {
 
   spmat sa;
   timeit2(make_sparse(&sa, &a), &timer_spmv_a);
-  timeit2(spmv(&sa, &b, &f), &timer_spmv_b);
+  timeit2(spmm(&sa, &b, &g), &timer_spmm_b);
+  if (N < 2) timeit2(spmv(&sa, &b, &f), &timer_spmv_b);
 
   double sp_flops = spmv_flops(&sa, &b);
+  double sp_mm_flops = spmm_flops(&sa, &b);
   sp_flops /= (1 << 20);
-  float err=cmp(&f, &c);
+  sp_mm_flops /= (1 << 20);
+  float err;
+  if (N < 2) err=cmp(&f, &c);
+  else err=cmp(&g, &c);
 
-  if (!opt.bench)
-  printf("M %u, K %u, ra %4.3f, rx %4.3f\ngemm/spmv time %2.5f, T gemm %f\ngemm_mflops = %4.6f, d MFLOP/s %.2f, T spmv %f + %f\nspmv_mflops = %4.6f, s MFLOP/s %.2f, NNZ A %u, NNZ B %u\nrho_a %f, rho_x %f, err = %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm / timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops / timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
+  if (!opt.bench) {
+    printf("M %u, K %u, ra %4.3f, rx %4.3f\ngemm/spmv time %2.5f, T gemm %f\ngemm_mflops = %4.6f, d MFLOP/s %.2f\nT spmm %f, flops %f\nT spmv %f + %f\nspmv_mflops = %4.6f, s MFLOP/s %.2f, NNZ A %u, NNZ B %u\nrho_a %f, rho_x %f, err = %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm / timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmm_b, sp_mm_flops / timer_spmm_b, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops / timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
+  }
   else
   printf("%5u, %5u, %4.3f, %4.3f, %7.3f, %7f, %4.1f, %7.1f, %8f, %7f, %5.2f, %7.1f, %9u, %6u, %5.3f, %5.3f, %f\n", M, K, rho_a_target, rho_x_target, timer_sgemm/timer_spmv_b, timer_sgemm, mFLOPs, mFLOPs/timer_sgemm, timer_spmv_b, timer_spmv_a, sp_flops, sp_flops/timer_spmv_b, nnz_a, nnz_b, rho_a, rho_x, err);
 
@@ -135,7 +145,7 @@ int main(int argc, char **argv) {
     echo(mat_print(&f, 0));
   }
 
-  free(a.d), free(b.d), free(f.d);
+  free(a.d), free(b.d), free(f.d), free(g.d);
   spmat_release(&sa);
   return 0;
 }
